@@ -1,5 +1,3 @@
-
-
 async function fetchWebApi(endpoint, method, token, body) {
     const res = await fetch(`https://api.spotify.com/${endpoint}`, {
         headers: {

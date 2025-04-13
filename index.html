@@ -1,20 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <script type="module" src="./src/spotify/index.js"></script>
-
-
 </head>
+
 <body>
     <div>
+        <div>
+            Token must have these scopes:
+            <ul>
+                <li>user-read-private</li>
+                <li>user-read-email</li>
+                <li>user-top-read</li>
+                <li>user-read-playback-state</li>
+                <li>user-modify-playback-state</li>
+                <li>streaming</li>
+                <li>app-remote-control</li>
+            </ul>
+            <input type="text" placeholder="Enter your Spotify token" id="token-input">
+        </div>
         <button id="top-10-btn" onclick="">Top 10 Tracks</button>
-
+        <button id="currently-playing-btn" onclick="">Currently Playing</button>
     </div>
     <div id="result">
-        
+
     </div>
+    <script type="module" src="./src/spotify/index.js"></script>
+    <script type="module">
+        import { getTopTracks } from './src/spotify/index.js';
+        import { getNowPlaying } from './src/spotify/index.js';
+
+        document.getElementById('top-10-btn').addEventListener('click', async () => {
+            const token = document.getElementById('token-input').value.trim();
+            if (!token) return alert("Please enter a valid Spotify token");
+
+            const tracks = await getTopTracks(token);
+            const resultDiv = document.getElementById('result');
+
+            resultDiv.innerHTML = `
+            <h2>Top 10 Tracks</h2>
+            <ol>
+              ${tracks.map(track => `<li>${track.name} by ${track.artists.map(a => a.name).join(', ')}</li>`).join('')}
+            </ol>
+          `;
+        });
+
+        document.getElementById('currently-playing-btn').addEventListener('click', async () => {
+            const token = document.getElementById('token-input').value.trim();
+            if (!token) return alert("Please enter a valid Spotify token");
+
+            const track = await getNowPlaying(token);
+            const resultDiv = document.getElementById('result');
+
+            resultDiv.innerHTML = `
+                <h2>Currently Playing</h2>
+                <p>${track.name} by <i>${track.artists.map(a => a.name).join(', ')}</i></p>
+            `;
+        });
+    </script>
 </body>
+
 </html>
