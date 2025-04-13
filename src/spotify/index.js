@@ -24,16 +24,46 @@ export async function getNowPlaying() {
     logger.info("Fetching now playing...");
 
     try {
-        // Endpoint reference: https://developer.spotify.com/documentation/web-api/reference/get-the-users-currently-playing-track
-        const data = await fetchWebApi('v1/me/player/currently-playing', 'GET');
+        // Endpoint reference: https://developer.spotify.com/documentation/web-api/reference/get-information-about-the-users-current-playback
+        const data = await fetchWebApi('v1/me/player', 'GET');
         if (!data || !data.item) {
             return { status: 'No song is currently playing' }; // No song is currently playing
         }
-        console.log("Data: ", data.item); 
-
         return data.item; // better response later?
     } catch (error) {
         logger.error("Error fetching now playing: ", error);
         return { status: 'Error fetching now playing' };
+    }
+}
+
+export async function getDevices() {
+    logger.info("Fetching devices...");
+
+    try {
+        // Endpoint reference: https://developer.spotify.com/documentation/web-api/reference/get-information-about-the-users-current-playback
+        const data = await fetchWebApi('v1/me/player/devices', 'GET');
+        if (!data || !data.devices) {
+            return { status: 'No devices found' }; // No devices found
+        }
+        return data.devices; // better response later?
+    } catch (error) {
+        logger.error("Error fetching devices: ", error);
+        return { status: 'Error fetching devices' };
+    }
+}
+
+export async function stopCurrentPlayingSong(device_id){
+    logger.info("Stopping current song...");
+
+    try {
+        // Endpoint reference: https://developer.spotify.com/documentation/web-api/reference/put-pause-a-users-playback
+        const data = await fetchWebApi(`v1/me/player/pause?device_id=${device_id}`, 'PUT');
+        if (!data) {
+            return { status: 'No song is currently playing' }; // No song is currently playing
+        }
+        return data; // better response later?
+    } catch (error) {
+        logger.error("Error stopping current song: ", error);
+        return { status: 'Error stopping current song' };
     }
 }

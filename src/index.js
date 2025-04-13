@@ -24,7 +24,7 @@ async function main() {
     var client_id = '11af8cd3f2bd441fb549fd7bd33bb64e';
     var redirect_uri = `http://127.0.0.1:${port}/callback`;
 
-    app.get('/login', function (req, res) {
+    app.get('/login', function (req, res) { // will shift to /auth later
 
         var state = generateRandomString(16);
 
@@ -47,7 +47,7 @@ async function main() {
             }));
     });
 
-    app.get('/callback', async function (req, res) {
+    app.get('/callback', async function (req, res) { // will shift to /auth later
         var code = req.query.code || null;
         var state = req.query.state || null;
         

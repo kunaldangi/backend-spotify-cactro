@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { getTopTracks } from '../../spotify/index.js';
+import { getDevices, getTopTracks, stopCurrentPlayingSong } from '../../spotify/index.js';
 import { getNowPlaying } from '../../spotify/index.js';
 import logger from '../../config/logger/index.js';
 
@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
     try {
         const { action } = req.query;
 
-        if (!action){
+        if (action === 'top-tracks'){ // seperate function later
             let topTracks = await getTopTracks();
 
             if(!topTracks) {
@@ -29,18 +29,59 @@ router.get('/', async (req, res) => {
             return res.send(topTracks);
         }
 
-        if (action === 'nowPlaying') {
+        if (action === 'now-playing') { // seperate function later
             logger.info('Now Playing action received');
-            // Handle now playing action here
+
             let nowPlaying = await getNowPlaying();
-            return res.send('Now Playing action received!');
+
+            if (!nowPlaying) {
+                logger.error('No song is currently playing');
+                return res.status(404).send('No song is currently playing');
+            }
+
+            return res.send(nowPlaying);
+        }
+
+        if (action === 'pause') {
+            logger.info('Stop action received');
+            
+            /*
+                it can be better, we can look for active device and then currently playing song
+                and then stop the song on that device
+
+                may be we don't need to think about what song is currrently playing or not and
+                spotify is smart enough to handle it
+            */
+
+
+            let devices = await getDevices();
+            
+            if (!devices[0].id) {
+                logger.error('No devices found');
+                return res.status(404).send('No devices found');
+            }
+
+            let nowPlaying = await getNowPlaying();
+            if (!nowPlaying) {
+                logger.error('No song is currently playing');
+                return res.status(404).send('No song is currently playing');
+            }
+            
+            let stop = await stopCurrentPlayingSong(devices[0].id);
+
+            if(stop.error.reason === 'PREMIUM_REQUIRED'){
+                logger.error('Premium spotify account required to stop playback');
+                return res.status(403).send('Premium spotify account required to stop playback');
+            }
+
+            return res.send(stop);
         }
 
         logger.error('Invalid Request!', action);
         return res.status(400).send('Invalid Request!');
     } catch (error) {
         logger.error('Error fetching top tracks:', error);
-        return res.status(500).send('Error fetching top tracks');
+        return res.status(500).send('Something went wrong!');
     }
 })
 
