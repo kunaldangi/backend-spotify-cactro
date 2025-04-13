@@ -13,12 +13,14 @@ const router = express.Router();
 // }
 // router.use(timeLog)
 
+let token = process.env.SPOTIFY_TOKEN;
+
 router.get('/', async (req, res) => {
     try {
         const { action } = req.query;
 
         if (action === 'top-tracks'){ // seperate function later
-            let topTracks = await getTopTracks();
+            let topTracks = await getTopTracks(token);
 
             if(!topTracks) {
                 logger.error('No top tracks found');
@@ -32,7 +34,7 @@ router.get('/', async (req, res) => {
         if (action === 'now-playing') { // seperate function later
             logger.info('Now Playing action received');
 
-            let nowPlaying = await getNowPlaying();
+            let nowPlaying = await getNowPlaying(token);
 
             if (!nowPlaying) {
                 logger.error('No song is currently playing');
@@ -54,20 +56,20 @@ router.get('/', async (req, res) => {
             */
 
 
-            let devices = await getDevices();
+            let devices = await getDevices(token);
             
             if (!devices[0].id) {
                 logger.error('No devices found');
                 return res.status(404).send('No devices found');
             }
 
-            let nowPlaying = await getNowPlaying();
+            let nowPlaying = await getNowPlaying(token);
             if (!nowPlaying) {
                 logger.error('No song is currently playing');
                 return res.status(404).send('No song is currently playing');
             }
             
-            let stop = await stopCurrentPlayingSong(devices[0].id);
+            let stop = await stopCurrentPlayingSong(devices[0].id, token);
 
             if(stop.error.reason === 'PREMIUM_REQUIRED'){
                 logger.error('Premium spotify account required to stop playback');
